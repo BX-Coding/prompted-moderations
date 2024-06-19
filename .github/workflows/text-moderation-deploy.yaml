@@ -1,0 +1,32 @@
+name: CI/CD for Text Moderation Lambda Function
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'text-moderation/**'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Package Lambda function
+      run: |
+        cd text-moderation
+        zip -r ../text-moderation.zip .
+
+    - name: Deploy to Lambda
+      run: |
+        aws lambda update-function-code \
+          --function-name text-moderation \
+          --zip-file fileb://text-moderation.zip \
+          --region us-east-2
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: us-east-2
